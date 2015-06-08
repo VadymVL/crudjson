@@ -119,8 +119,7 @@ public class BooksController {
     }*/
 	
 	 @RequestMapping(value="/upload", method=RequestMethod.POST )
-	    public @ResponseBody String singleSave(@RequestParam("file") MultipartFile file, @RequestParam("file_name") String file_name ){
-	    	System.out.println("File Description:"+file_name);
+	    public @ResponseBody String singleSave(@RequestParam("file") MultipartFile file){
 	    	String fileName = null;
 	    	if (!file.isEmpty()) {
 	            try {
@@ -128,6 +127,7 @@ public class BooksController {
 	                //byte[] bytes = file.getBytes();
 	                File rootDir = new File("/home/mif/Downloads/Stuff");
 	                File uploadedFile = new File(rootDir, fileName);
+	               // if(file.getContentType() == )
 	                file.transferTo(uploadedFile);
 	               // File newFile = new File("/home/images/" + fileName);
 	               // if(!newFile.exists()) {
@@ -145,6 +145,58 @@ public class BooksController {
 	        //    } finally {
 	         //   	return "are you sure?"; 
 	            }
+	        } else {
+	            return "Unable to . File is empty.";
+	        }
+	    }
+	 
+	 @RequestMapping(value="/uploads", method=RequestMethod.GET)
+	 public String provideUploadsInfo() {
+	        return "/book/upload";//"You can upload a file by posting to this same URL.";
+	 }
+	 
+	 @RequestMapping(value="/uploads", method=RequestMethod.POST )
+	    public @ResponseBody String mupltipleSave(@RequestParam("file") MultipartFile[] files){
+	    	String fileName = null;
+	    	String resultString  = "";
+	    	if (files != null && files.length > 0) {
+	    		for(int i = 0; i< files.length; i++) {
+	    			try {
+	    				if(files[i] != null && !files[i].isEmpty()) {
+	    					fileName = files[i].getOriginalFilename();
+	    					//file name and file format
+	    					if( /*(fileName != null && !fileName.contains("jpg")) ||*/ (!files[i].getContentType().contains("image")) ) {
+	    						resultString += "file: " + fileName + " - not jpg - " + files[i].getContentType() + "<br>";
+	    						System.out.println("not jpg");
+	    						continue; //it is not image jpg file
+	    					}
+	    					//make sure, that name is unique and will not have duplicates
+	    					fileName = System.currentTimeMillis() + "-" + fileName; //adding timestamp
+	    					System.out.println(fileName + "/" + files[i].getContentType());
+
+	    					//check for file size > 7 MB
+	    					if(files[i].getSize() > 7000000) {
+	    						resultString += "file: " + fileName + " - " + files[i].getSize() + " > 7 MB <br>";
+	    						System.out.println("7 MB");
+	    						continue; //> 7 MB
+	    					}
+	    					File rootDir = new File("/home/mif/Downloads/Stuff");
+	    					//check for free space?
+	    					if(rootDir.getUsableSpace() < files[i].getSize()) {
+	    						resultString += "file: " + fileName + " - " + files[i].getSize() + " > " + rootDir.getUsableSpace() + "<br>";
+	    						System.out.println("no enough space");
+	    						continue;
+	    					}
+	    					File uploadedFile = new File(rootDir, fileName);
+	    					// if(file.getContentType() == )
+	    					files[i].transferTo(uploadedFile);
+	    					resultString += "file: " + fileName + " - success! - " + uploadedFile.getAbsoluteFile() + "<br>";
+	    				}
+	    			} catch (Exception e) {
+	    				resultString += "You failed to " + fileName + ": " + e.getMessage() + "<br>";
+	    			}
+	    		}
+	    		return resultString;
 	        } else {
 	            return "Unable to . File is empty.";
 	        }
