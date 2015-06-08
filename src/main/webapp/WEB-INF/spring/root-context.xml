@@ -53,6 +53,10 @@
               <property name="sessionFactory" ref="sessionFactory" />
        </bean>
 
+		<bean id="multipartResolver"  
+    			class="org.springframework.web.multipart.commons.CommonsMultipartResolver">   
+		</bean>
+		
        <tx:annotation-driven transaction-manager="transactionManager" />
        <context:component-scan base-package="springCRUD.books" />
 </beans>
